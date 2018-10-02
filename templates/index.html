@@ -1,0 +1,29 @@
+<html>  
+
+  <style>
+    table, th, td {
+       border: 1px solid black;
+       border-collapse: collapse;
+       text-align: right;
+    }
+    th, td {
+      padding: 10px;
+    }
+    th {
+      text-align: center;
+    }
+    </style>
+
+  <table style = "width:%">
+  {% for r in table %}
+  <TR></TR>
+    <TD>{{r[0]}}</TD>
+    <TD>{{r[1]}}</TD>
+    <TD>{{r[2]}}</TD>
+    <TD>{{r[3]}}</TD>
+    <TD>{{r[4]}}</TD>
+  </TR>
+  {% endfor %}
+  </table>
+
+</html>
