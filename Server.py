@@ -22,6 +22,7 @@ def getCSV():
 def getIOTjson():
     jsonList = []
 
+    # Copy csv data to json file and store in list
     with open(CSVpath) as csvFile:
         jsonFile = open('IOTout.json', 'w')
         reader = csv.DictReader(csvFile)
@@ -30,6 +31,7 @@ def getIOTjson():
             jsonFile.write('\n')
             jsonList.append(json.dumps(row))
 
+    # Convert json list to string for return value
     jsonOut = str(jsonList)
     jsonOut = jsonOut[2:-2]
     return jsonOut
@@ -42,7 +44,7 @@ def testView():
 
 @app.route("/iot")
 def iotAllOut():
-    # Pass CSV data as list of lists to index.html
+    # Get json string and return it
     IOTjson = getIOTjson()
     return IOTjson
 
