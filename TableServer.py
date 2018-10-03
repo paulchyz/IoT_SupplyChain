@@ -3,7 +3,7 @@ from jinja2 import Template
 import csv
 
 app = Flask(__name__)
-path = r'/Users/pchyz/Documents/AppDev/Capstone/data.csv'
+path = r'/Users/pchyz/Documents/GitHub/IoT_SupplyChain/data.csv'
 
 @app.route("/")
 def main():
