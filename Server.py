@@ -33,7 +33,8 @@ def getIOTjson():
 
     # Convert json list to string for return value
     jsonOut = str(jsonList)
-    jsonOut = jsonOut[2:-2]
+    jsonOut = jsonOut.replace("'","")
+    jsonOut = jsonOut[1:-1]
     return jsonOut
 
 @app.route("/testview")
