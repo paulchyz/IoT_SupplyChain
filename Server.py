@@ -5,10 +5,9 @@ import csv
 app = Flask(__name__)
 path = r'/Users/pchyz/Documents/GitHub/IoT_SupplyChain/data.csv'
 
-@app.route("/")
-def main():
+def getCSV():
     # Set table to headers
-    table = [['yr/mo/d', 'time', 'temperature', 'humidity', 'light']]
+    CSVlist = [['yr/mo/d', 'time', 'temperature', 'humidity', 'light']]
 
     # Store CSV data into list of lists
     with open(path) as f:
@@ -16,10 +15,14 @@ def main():
         count = 0
         for row in reader:
             if count > 0:
-                table.append(row)
+                CSVlist.append(row)
             count += 1
+    return CSVlist
 
-    # Generate HTML
+@app.route("/testview")
+def testView():
+    # Pass CSV data as list of lists to index.html
+    table = getCSV()
     return render_template('index.html', table=table)
 
 @app.route('/nfc/<nfcid>')
