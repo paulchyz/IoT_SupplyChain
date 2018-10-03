@@ -40,7 +40,7 @@ def testView():
     table = getCSV()
     return render_template('index.html', table=table)
 
-@app.route("/IOT")
+@app.route("/iot")
 def iotAllOut():
     # Pass CSV data as list of lists to index.html
     IOTjson = getIOTjson()
