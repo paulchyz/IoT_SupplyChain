@@ -3,14 +3,15 @@ from jinja2 import Template
 import csv, json
 
 app = Flask(__name__)
-CSVpath = r'data.csv'
+iotCSVfile = r'iotData.csv'
+nfcCSVfile = r'nfcData.csv'
 
 def getCSV():
     # Set table to headers
     CSVlist = [['Date (y/m/d)', 'Time', 'Temperature', 'Humidity', 'Light']]
 
     # Store CSV data into list of lists
-    with open(CSVpath) as f:
+    with open(iotCSVfile) as f:
         reader = csv.reader(f)
         count = 0
         for row in reader:
@@ -23,7 +24,7 @@ def getIOTjson():
     jsonList = []
 
     # Copy csv data to json file and store in list
-    with open(CSVpath) as csvFile:
+    with open(iotCSVfile) as csvFile:
         jsonFile = open('IOTout.json', 'w')
         reader = csv.DictReader(csvFile)
         for row in reader:

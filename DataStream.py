@@ -1,8 +1,10 @@
 import requests, time, csv, os.path
 
+iotCSVfile = r'iotData.csv'
+
 # Make CSV and add headers if file does not exist
-if not os.path.isfile(r'data.csv'):
-    f = open('data.csv', 'w')
+if not os.path.isfile(iotCSVfile):
+    f = open(iotCSVfile, 'w')
     fWriter = csv.writer(f)
     fWriter.writerow(['Date (y/m/d)','Time','Temperature','Humidity','Light'])
     f.close()
@@ -30,7 +32,7 @@ while True:
     currentTime = time.strftime('%H:%M:%S', time.gmtime())
 
     # Append data to CSV
-    with open('data.csv', 'a') as dataFile:
+    with open(iotCSVfile, 'a') as dataFile:
         fWriter = csv.writer(dataFile)
         fWriter.writerow([currentDate, currentTime, tempNum, humidityNum, lightNum])
     
