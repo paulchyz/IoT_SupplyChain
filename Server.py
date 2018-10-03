@@ -1,16 +1,16 @@
 from flask import Flask, render_template,json,request
 from jinja2 import Template
-import csv
+import csv, json
 
 app = Flask(__name__)
-path = r'/Users/pchyz/Documents/GitHub/IoT_SupplyChain/data.csv'
+CSVpath = r'data.csv'
 
 def getCSV():
     # Set table to headers
-    CSVlist = [['yr/mo/d', 'time', 'temperature', 'humidity', 'light']]
+    CSVlist = [['Date (y/m/d)', 'Time', 'Temperature', 'Humidity', 'Light']]
 
     # Store CSV data into list of lists
-    with open(path) as f:
+    with open(CSVpath) as f:
         reader = csv.reader(f)
         count = 0
         for row in reader:
@@ -19,11 +19,32 @@ def getCSV():
             count += 1
     return CSVlist
 
+def getIOTjson():
+    jsonList = []
+
+    with open(CSVpath) as csvFile:
+        jsonFile = open('IOTout.json', 'w')
+        reader = csv.DictReader(csvFile)
+        for row in reader:
+            json.dump(row, jsonFile)
+            jsonFile.write('\n')
+            jsonList.append(json.dumps(row))
+
+    jsonOut = str(jsonList)
+    jsonOut = jsonOut[2:-2]
+    return jsonOut
+
 @app.route("/testview")
 def testView():
     # Pass CSV data as list of lists to index.html
     table = getCSV()
     return render_template('index.html', table=table)
+
+@app.route("/IOT")
+def iotAllOut():
+    # Pass CSV data as list of lists to index.html
+    IOTjson = getIOTjson()
+    return IOTjson
 
 @app.route('/nfc/<nfcid>')
 def api_article(nfcid):

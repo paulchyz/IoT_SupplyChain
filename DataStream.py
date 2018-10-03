@@ -1,10 +1,10 @@
 import requests, time, csv, os.path
 
 # Make CSV and add headers if file does not exist
-if not os.path.isfile(r'/Users/pchyz/Documents/AppDev/Capstone/data.csv'):
+if not os.path.isfile(r'data.csv'):
     f = open('data.csv', 'w')
     fWriter = csv.writer(f)
-    fWriter.writerow(['yr/mo/d','time','temperature','humidity','light'])
+    fWriter.writerow(['Date (y/m/d)','Time','Temperature','Humidity','Light'])
     f.close()
 
 # Infinite loop
