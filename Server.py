@@ -9,9 +9,14 @@ nfcCSVfile = r'nfcData.csv'
 iotJSONfile = r'iotOutput.json'
 nfcJSONfile = r'nfcOutput.json'
 
-def getCSV(filename):
-    # Set table to headers
-    CSVlist = [['Date', 'Time', 'Temperature', 'Humidity', 'Light']]
+def getCSV(filename, datatype):
+    # Set table headers
+    if datatype=='iot':
+        CSVlist = [['Date', 'Time', 'Temperature', 'Humidity', 'Light']]
+    elif datatype=='nfc':
+        CSVlist = [['ID', 'Date', 'Longitude', 'Latitude', 'Time']]
+    else:
+        CSVlist = [[]]
 
     # Store CSV data into list of lists
     with open(filename) as f:
@@ -76,8 +81,8 @@ def makeNFCcsv(nfcPost):
 @app.route("/testview")
 def testView():
     # Pass CSV data as list of lists to index.html
-    iotTable = getCSV(iotCSVfile)
-    nfcTable = getCSV(nfcCSVfile)
+    iotTable = getCSV(iotCSVfile, 'iot')
+    nfcTable = getCSV(nfcCSVfile, 'nfc')
     return render_template('index.html', iotTable=iotTable, nfcTable=nfcTable)
 
 @app.route("/iot")
