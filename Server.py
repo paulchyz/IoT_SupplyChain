@@ -5,6 +5,8 @@ import csv, json
 app = Flask(__name__)
 iotCSVfile = r'iotData.csv'
 nfcCSVfile = r'nfcData.csv'
+iotJSONfile = r'jsonData.csv'
+nfcJSONfile = r'jsonData.csv'
 
 def getCSV():
     # Set table to headers
@@ -25,7 +27,7 @@ def getIOTjson():
 
     # Copy csv data to json file and store in list
     with open(iotCSVfile) as csvFile:
-        jsonFile = open('IOTout.json', 'w')
+        jsonFile = open(iotJSONfile, 'w')
         reader = csv.DictReader(csvFile)
         for row in reader:
             json.dump(row, jsonFile)
