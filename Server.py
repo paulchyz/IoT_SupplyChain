@@ -66,13 +66,13 @@ def testView():
 
 @app.route("/iot")
 def iotAllOut():
-    # Get json string and return it
+    # Get iot json string and return it
     IOTjson = getIOTjson()
     return IOTjson
 
 @app.route("/nfc")
 def nfcAllOut():
-    # Get json string and return it
+    # Get nfc json string and return it
     NFCjson = getNFCjson()
     return NFCjson
 
