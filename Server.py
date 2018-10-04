@@ -14,7 +14,7 @@ def getCSV(filename, datatype):
     if datatype=='iot':
         CSVlist = [['Date', 'Time', 'Temperature', 'Humidity', 'Light']]
     elif datatype=='nfc':
-        CSVlist = [['ID', 'Date', 'Longitude', 'Latitude', 'Time']]
+        CSVlist = [['ID', 'Date Hatched', 'Longitude', 'Latitude', 'Time']]
     else:
         CSVlist = [[]]
 
