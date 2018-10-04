@@ -64,7 +64,7 @@ def makeNFCcsv(nfcPost):
         fWriter.writerow([nfcPost['ID'], nfcPost['Date Hatched'], nfcPost['Latitude'], nfcPost['Longitude'], nfcPost['Time']])
     return
 
-@app.route("/testview")
+@app.route("/")
 def testView():
     # Pass CSV data as list of lists to index.html
     iotTable = getCSV(iotCSVfile, 'iot')
