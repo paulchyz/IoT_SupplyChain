@@ -78,7 +78,7 @@ def testView():
     # Pass CSV data as list of lists to index.html
     iotTable = getCSV(iotCSVfile)
     nfcTable = getCSV(nfcCSVfile)
-    return render_template('index.html', iotTable=iotTable)
+    return render_template('index.html', iotTable=iotTable, nfcTable=nfcTable)
 
 @app.route("/iot")
 def iotAllOut():

@@ -12,18 +12,37 @@
     th {
       text-align: center;
     }
+    .flex-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-evenly;
+    }
     </style>
 
-  <table style = "width:%">
-  {% for r in iotTable %}
-  <TR></TR>
-    <TD>{{r[0]}}</TD>
-    <TD>{{r[1]}}</TD>
-    <TD>{{r[2]}}</TD>
-    <TD>{{r[3]}}</TD>
-    <TD>{{r[4]}}</TD>
-  </TR>
-  {% endfor %}
-  </table>
+  <div class="flex-container">
+    <table id = "IoT" style = "width:%">
+    {% for r in iotTable %}
+    <TR></TR>
+      <TD>{{r[0]}}</TD>
+      <TD>{{r[1]}}</TD>
+      <TD>{{r[2]}}</TD>
+      <TD>{{r[3]}}</TD>
+      <TD>{{r[4]}}</TD>
+    </TR>
+    {% endfor %}
+    </table>
+
+    <table id = "NFC" style = "width:%">
+      {% for r in nfcTable %}
+      <TR></TR>
+        <TD>{{r[0]}}</TD>
+        <TD>{{r[1]}}</TD>
+        <TD>{{r[2]}}</TD>
+        <TD>{{r[3]}}</TD>
+        <TD>{{r[4]}}</TD>
+      </TR>
+      {% endfor %}
+      </table>
+    </div>
 
 </html>
