@@ -1,6 +1,7 @@
 from flask import Flask, render_template,json,request
 from jinja2 import Template
 import csv, json
+import os
 
 app = Flask(__name__)
 iotCSVfile = r'iotData.csv'
