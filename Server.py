@@ -14,31 +14,49 @@ def getCSV():
 
     # Store CSV data into list of lists
     with open(iotCSVfile) as f:
-        reader = csv.reader(f)
+        csvreader = csv.reader(f)
         count = 0
-        for row in reader:
+        for row in csvreader:
             if count > 0:
                 CSVlist.append(row)
             count += 1
     return CSVlist
 
 def getIOTjson():
-    jsonList = []
+    iotJsonList = []
 
     # Copy csv data to json file and store in list
-    with open(iotCSVfile) as csvFile:
-        jsonFile = open(iotJSONfile, 'w')
-        reader = csv.DictReader(csvFile)
-        for row in reader:
-            json.dump(row, jsonFile)
-            jsonFile.write('\n')
-            jsonList.append(json.dumps(row))
+    with open(iotCSVfile) as iotCsvFile:
+        iotJson = open(iotJSONfile, 'w')
+        iotreader = csv.DictReader(iotCsvFile)
+        for row in iotreader:
+            json.dump(row, iotJson)
+            iotJson.write('\n')
+            iotJsonList.append(json.dumps(row))
 
     # Convert json list to string for return value
-    jsonOut = str(jsonList)
-    jsonOut = jsonOut.replace("'","")
-    jsonOut = jsonOut[1:-1]
-    return jsonOut
+    iotJsonOut = str(iotJsonList)
+    iotJsonOut = iotJsonOut.replace("'","")
+    iotJsonOut = iotJsonOut[1:-1]
+    return iotJsonOut
+
+def getNFCjson():
+    nfcJsonList = []
+
+    # Copy csv data to json file and store in list
+    with open(nfcCSVfile) as nfcCsvFile:
+        nfcJson = open(nfcJSONfile, 'w')
+        nfcreader = csv.DictReader(nfcCsvFile)
+        for row in nfcreader:
+            json.dump(row, nfcJson)
+            nfcJson.write('\n')
+            nfcJsonList.append(json.dumps(row))
+
+    # Convert json list to string for return value
+    nfcJsonOut = str(nfcJsonList)
+    nfcJsonOut = nfcJsonOut.replace("'","")
+    nfcJsonOut = nfcJsonOut[1:-1]
+    return nfcJsonOut
 
 @app.route("/testview")
 def testView():
@@ -51,6 +69,12 @@ def iotAllOut():
     # Get json string and return it
     IOTjson = getIOTjson()
     return IOTjson
+
+@app.route("/nfc")
+def nfcAllOut():
+    # Get json string and return it
+    NFCjson = getNFCjson()
+    return NFCjson
 
 @app.route('/nfc/<nfcid>')
 def api_article(nfcid):
