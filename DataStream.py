@@ -6,7 +6,7 @@ iotCSVfile = r'iotData.csv'
 if not os.path.isfile(iotCSVfile):
     f = open(iotCSVfile, 'w')
     fWriter = csv.writer(f)
-    fWriter.writerow(['Date (y/m/d)','Time','Temperature','Humidity','Light'])
+    fWriter.writerow(['Date','Time','Temperature','Humidity','Light'])
     f.close()
 
 # Infinite loop
