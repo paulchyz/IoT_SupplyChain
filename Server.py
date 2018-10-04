@@ -29,39 +29,25 @@ def getCSV(filename, datatype):
     return CSVlist
 
 def makeIOTjson():
-    iotJsonList = []
-
     # Copy CSV data to json file and store in list
     with open(iotCSVfile) as iotCsvFile:
         iotJson = open(iotJSONfile, 'w')
         iotreader = csv.DictReader(iotCsvFile)
-        for row in iotreader:
-            json.dump(row, iotJson)
-            iotJson.write('\n')
-            iotJsonList.append(json.dumps(row))
-
-    # Convert json list to string for return value
-    iotJsonOut = str(iotJsonList)
-    iotJsonOut = iotJsonOut.replace("'","")
-    iotJsonOut = iotJsonOut[1:-1]
+        
+        data = [r for r in iotreader]
+        json.dump(data, iotJson)
+        iotJsonOut = json.dumps(data)
     return iotJsonOut
 
 def makeNFCjson():
-    nfcJsonList = []
-
     # Copy CSV data to json file and store in list
     with open(nfcCSVfile) as nfcCsvFile:
         nfcJson = open(nfcJSONfile, 'w')
         nfcreader = csv.DictReader(nfcCsvFile)
-        for row in nfcreader:
-            json.dump(row, nfcJson)
-            nfcJson.write('\n')
-            nfcJsonList.append(json.dumps(row))
 
-    # Convert json list to string for return value
-    nfcJsonOut = str(nfcJsonList)
-    nfcJsonOut = nfcJsonOut.replace("'","")
-    nfcJsonOut = nfcJsonOut[1:-1]
+        data = [r for r in nfcreader]
+        json.dump(data, nfcJson)
+        nfcJsonOut = json.dumps(data)
     return nfcJsonOut
 
 def makeNFCcsv(nfcPost):
