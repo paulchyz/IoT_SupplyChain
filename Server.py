@@ -29,7 +29,7 @@ def getCSV(filename, datatype):
     return CSVlist
 
 def makeIOTjson():
-    # Copy CSV data to json file and store in list
+    # Copy CSV data to json file, also return json object
     with open(iotCSVfile) as iotCsvFile:
         iotJson = open(iotJSONfile, 'w')
         iotreader = csv.DictReader(iotCsvFile)
@@ -40,7 +40,7 @@ def makeIOTjson():
     return iotJsonOut
 
 def makeNFCjson():
-    # Copy CSV data to json file and store in list
+    # Copy CSV data to json file, also return json object
     with open(nfcCSVfile) as nfcCsvFile:
         nfcJson = open(nfcJSONfile, 'w')
         nfcreader = csv.DictReader(nfcCsvFile)
