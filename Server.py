@@ -14,9 +14,9 @@ nfcJSONfile = currentPath+ r'/dataFiles/nfcOutput.json'
 def getCSV(filename, datatype):
     # Set table headers
     if datatype=='iot':
-        CSVlist = [['Date', 'Time', 'Temperature', 'Humidity', 'Light']]
+        CSVlist = [['Date', 'Time', 'Temperature', 'Humidity', 'Light', 'DateTime']]
     elif datatype=='nfc':
-        CSVlist = [['ID', 'Date Hatched', 'Longitude', 'Latitude', 'Time']]
+        CSVlist = [['ID', 'Date Hatched', 'Latitude', 'Longitude', 'Date', 'Time', 'DateTime']]
     else:
         CSVlist = [[]]
 
@@ -54,13 +54,17 @@ def makeNFCcsv(nfcPost):
     if not os.path.isfile(nfcCSVfile):
         f = open(nfcCSVfile, 'w')
         fWriter = csv.writer(f)
-        fWriter.writerow(['ID', 'Date Hatched', 'Latitude', 'Longitude', 'Time'])
+        fWriter.writerow(['ID', 'Date Hatched', 'Latitude', 'Longitude', 'Date', 'Time', 'DateTime'])
         f.close()
 
     # Write data values to CSV file
     with open(nfcCSVfile, 'a') as dataFile:
+        dateTime = nfcPost['Date'] + nfcPost['Time']
+        dateTime = dateTime.replace('/', '')
+        dateTime = dateTime.replace(':', '')
+
         fWriter = csv.writer(dataFile)
-        fWriter.writerow([nfcPost['ID'], nfcPost['Date Hatched'], nfcPost['Latitude'], nfcPost['Longitude'], nfcPost['Time']])
+        fWriter.writerow([nfcPost['ID'], nfcPost['Date Hatched'], nfcPost['Latitude'], nfcPost['Longitude'], nfcPost['Date'], nfcPost['Time'], dateTime])
     return
 
 @app.route("/")
