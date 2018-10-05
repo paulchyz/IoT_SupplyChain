@@ -4,10 +4,11 @@ import csv, json
 import os
 
 app = Flask(__name__)
-iotCSVfile = r'iotData.csv'
-nfcCSVfile = r'nfcData.csv'
-iotJSONfile = r'iotOutput.json'
-nfcJSONfile = r'nfcOutput.json'
+currentPath = str(os.getcwd())
+iotCSVfile = currentPath + r'/dataFiles/iotData.csv'
+nfcCSVfile = currentPath + r'/dataFiles/nfcData.csv'
+iotJSONfile = currentPath + r'/dataFiles/iotOutput.json'
+nfcJSONfile = currentPath + r'/dataFiles/nfcOutput.json'
 
 def getCSV(filename, datatype):
     # Set table headers
