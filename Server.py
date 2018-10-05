@@ -1,4 +1,4 @@
-from flask import Flask, render_template,json,request
+from flask import Flask, render_template,json,request,jsonify
 from jinja2 import Template
 import csv, json
 import os
@@ -33,11 +33,9 @@ def makeIOTjson():
     with open(iotCSVfile) as iotCsvFile:
         iotJson = open(iotJSONfile, 'w')
         iotreader = csv.DictReader(iotCsvFile)
-        
         data = [r for r in iotreader]
         json.dump(data, iotJson)
-        iotJsonOut = json.dumps(data)
-    return iotJsonOut
+    return jsonify(data)
 
 def makeNFCjson():
     # Copy CSV data to json file, also return json object
@@ -47,8 +45,7 @@ def makeNFCjson():
 
         data = [r for r in nfcreader]
         json.dump(data, nfcJson)
-        nfcJsonOut = json.dumps(data)
-    return nfcJsonOut
+    return jsonify(data)
 
 def makeNFCcsv(nfcPost):
     # Make CSV and add headers if file does not exist
