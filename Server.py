@@ -83,7 +83,7 @@ def nfcAllOut():
     NFCjson = makeNFCjson()
     return NFCjson    
 
-@app.route('/post', methods = ['POST'])
+@app.route('/postjson', methods = ['POST'])
 def receivePost():
     # Get json data and send to CSV file
     message = request.get_json()
@@ -94,11 +94,10 @@ def receivePost():
 def api_article(nfcid):
     return 'You are reading ' + nfcid
 
-@app.route('/postjson', methods = ['POST'])
+@app.route('/post', methods = ['POST'])
 def postJsonHandler():
-    print (request.is_json)
-    content = request.get_json()
-    print (content)
+    message = request.form
+    makeNFCcsv(message) 
     return 'JSON posted'
 
 #test json to be sent
@@ -109,4 +108,4 @@ def postJsonHandler():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)
