@@ -5,10 +5,10 @@ import os
 
 app = Flask(__name__)
 currentPath = str(os.getcwd())
-iotCSVfile = currentPath + r'/dataFiles/iotData.csv'
-nfcCSVfile = currentPath + r'/dataFiles/nfcData.csv'
-iotJSONfile = currentPath + r'/dataFiles/iotOutput.json'
-nfcJSONfile = currentPath + r'/dataFiles/nfcOutput.json'
+iotCSVfile = currentPath+ r'/IoT_SupplyChain/dataFiles/iotData.csv'
+nfcCSVfile = currentPath+ r'/IoT_SupplyChain/dataFiles/nfcData.csv'
+iotJSONfile = currentPath+ r'/IoT_SupplyChain/dataFiles/iotOutput.json'
+nfcJSONfile = currentPath+ r'/IoT_SupplyChain/dataFiles/nfcOutput.json'
 
 def getCSV(filename, datatype):
     # Set table headers
