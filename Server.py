@@ -87,7 +87,7 @@ def nfcAllOut():
 def receivePost():
     # Get json data and send to CSV file
     message = request.get_json()
-    output = makeNFCcsv(message)
+    makeNFCcsv(message)
     return 'JSON posted'
 
 @app.route('/nfc/<nfcid>')
