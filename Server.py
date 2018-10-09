@@ -1,6 +1,6 @@
 from flask import Flask, render_template,json,request,jsonify
 from jinja2 import Template
-import csv, json
+import csv, json, ast
 import os, sys
 
 app = Flask(__name__)
@@ -10,6 +10,11 @@ iotCSVfile = os.path.join(currentPath,'dataFiles/iotData.csv')
 nfcCSVfile = os.path.join(currentPath,'dataFiles/nfcData.csv')
 iotJSONfile = os.path.join(currentPath,'dataFiles/iotOutput.json')
 nfcJSONfile = os.path.join(currentPath,'dataFiles/nfcOutput.json')
+bcJSONfile = os.path.join(currentPath,'dataFiles/bcOutput.json')
+bcTestFile = os.path.join(currentPath,'dataFiles/data.json')
+
+username = os.environ.get('CAPSTONE_USERNAME', None)
+password = os.environ.get('CAPSTONE_PASSWORD', None)
 
 def getCSV(filename, datatype):
     # Set table headers
@@ -47,6 +52,30 @@ def makeNFCjson():
 
         data = [r for r in nfcreader]
         json.dump(data, nfcJson)
+    return jsonify(data)
+
+def makeBCjson():
+    #content = {"channel": "default", "chaincode": "obcs-cardealer", "method": "queryVehiclePartByOwner", "args": ["TysonFarms"], "chaincodeVer": "1.0"}
+    #data = request.post(r'https://cloudforcebcmanager-gse00015180.blockchain.ocp.oraclecloud.com/restproxy1/bcsgw/rest/v1/transaction/query', auth=(username, password))
+
+    # Parse blockchain data, store to json file, and return json object
+    with open(bcTestFile, 'r') as bcFile:
+        data = json.load(bcFile)
+        result = data['result']
+        encode = result['encode']
+        payload = ast.literal_eval(result['payload'])
+    
+    with open(bcJSONfile, 'w') as jsonFile:
+        jsonFile.write('[')
+        for num, value in enumerate(payload):
+            if num == 0:
+                jsonFile.write(value['valueJson'])
+            else:
+                jsonFile.write(', ' + value['valueJson'])
+        jsonFile.write(']')
+
+    with open(bcJSONfile, 'r') as jsonFile:
+        data = json.load(jsonFile)
     return jsonify(data)
 
 def makeNFCcsv(nfcPost):
@@ -102,6 +131,12 @@ def postJsonHandler():
     message = request.form
     makeNFCcsv(message) 
     return 'JSON posted'
+
+@app.route("/blockchain")
+def bcAllOut():
+    # Get nfc json string from CSV and return it
+    BCjson = makeBCjson()
+    return BCjson 
 
 #test json to be sent
 #     { "device":"TemperatureSensor", 
