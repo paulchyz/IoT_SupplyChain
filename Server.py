@@ -101,6 +101,15 @@ def makeNFCcsv(nfcPost):
         fWriter.writerow([nfcPost['ID'], nfcPost['Date Hatched'], nfcPost['Latitude'], nfcPost['Longitude'], nfcPost['Date'], nfcPost['Time'], dateTime])
     return
 
+def BCadd(nfcPost):
+    dateTime = nfcPost['Date'] + nfcPost['Time']
+    dateTime = dateTime.replace('/', '')
+    dateTime = dateTime.replace(':', '')
+    data = [nfcPost['ID'], 'Farm2', dateTime, 'TysonFarms', 'TysonFarms', 'false', '0']
+    content = {"channel": "default","chaincode": "obcs-cardealer","method": "initVehiclePart","chaincodeVer": "1.0","args": data,"proposalWaitTime": 50000,"transactionWaitTime": 60000}
+    resp = requests.post(r'https://cloudforcebcmanager-gse00015180.blockchain.ocp.oraclecloud.com:443/restproxy1/bcsgw/rest/v1/transaction/invocation', json=content, auth=(username, password))
+    return
+
 @app.route("/")
 def testView():
     # Pass CSV data as list of lists to index.html
@@ -125,6 +134,7 @@ def receivePost():
     # Get json data and send to CSV file
     message = request.get_json()
     makeNFCcsv(message)
+    BCadd(message)
     return 'JSON posted'
 
 @app.route('/nfc/<nfcid>')
