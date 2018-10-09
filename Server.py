@@ -13,7 +13,6 @@ nfcCSVfile = os.path.join(currentPath,'dataFiles/nfcData.csv')
 iotJSONfile = os.path.join(currentPath,'dataFiles/iotOutput.json')
 nfcJSONfile = os.path.join(currentPath,'dataFiles/nfcOutput.json')
 bcJSONfile = os.path.join(currentPath,'dataFiles/bcOutput.json')
-bcTestFile = os.path.join(currentPath,'dataFiles/data.json')
 
 # Set authorization parameters from config file
 with open(configFile) as config:
@@ -31,35 +30,42 @@ def getCSV(filename, datatype):
     else:
         CSVlist = [[]]
 
-    # Store CSV data into list of lists
-    with open(filename) as f:
-        csvreader = csv.reader(f)
-        count = 0
-        for row in csvreader:
-            if count > 0:
-                CSVlist.append(row)
-            count += 1
+    if os.path.isfile(filename):
+        # Store CSV data into list of lists
+        with open(filename) as f:
+            csvreader = csv.reader(f)
+            count = 0
+            for row in csvreader:
+                if count > 0:
+                    CSVlist.append(row)
+                count += 1
     return CSVlist
 
 # Return json data from IoT CSV
 def makeIOTjson():
     # Copy CSV data to json file, also return json object
-    with open(iotCSVfile) as iotCsvFile:
-        iotJson = open(iotJSONfile, 'w')
-        iotreader = csv.DictReader(iotCsvFile)
-        data = [r for r in iotreader]
-        json.dump(data, iotJson)
+    if os.path.isfile(iotCSVfile):
+        with open(iotCSVfile) as iotCsvFile:
+            iotJson = open(iotJSONfile, 'w')
+            iotreader = csv.DictReader(iotCsvFile)
+            data = [r for r in iotreader]
+            json.dump(data, iotJson)
+    else:
+        data = {"Date": "", "DateTime": "", "Humidity": "", "Light": "", "Temperature": "", "Time": ""}
     return jsonify(data)
 
 # Return json data from NFC CSV
 def makeNFCjson():
     # Copy CSV data to json file, also return json object
-    with open(nfcCSVfile) as nfcCsvFile:
-        nfcJson = open(nfcJSONfile, 'w')
-        nfcreader = csv.DictReader(nfcCsvFile)
+    if os.path.isfile(nfcCSVfile):
+        with open(nfcCSVfile) as nfcCsvFile:
+            nfcJson = open(nfcJSONfile, 'w')
+            nfcreader = csv.DictReader(nfcCsvFile)
 
-        data = [r for r in nfcreader]
-        json.dump(data, nfcJson)
+            data = [r for r in nfcreader]
+            json.dump(data, nfcJson)
+    else:
+        data = {"Date": "", "Date Hatched": "", "DateTime": "", "ID": "", "Latitude": "", "Longitude": "", "Time": ""}
     return jsonify(data)
 
 # Return json data from blockchain
@@ -169,11 +175,45 @@ def postJsonHandler():
 def api_article(nfcid):
     return 'You are reading ' + nfcid
 
-#test json to be sent
-#     { "device":"TemperatureSensor", 
-#  "value":"20", 
-#  "timestamp":"25/01/2017 10:10:05" 
-# }
+# Delete all CSV and json files in dataFiles directory
+@app.route("/deleteall")
+def deleteAll():
+    if os.path.isfile(iotCSVfile):
+        os.remove(iotCSVfile)
+    if os.path.isfile(nfcCSVfile):
+        os.remove(nfcCSVfile)
+    if os.path.isfile(iotJSONfile):
+        os.remove(iotJSONfile)
+    if os.path.isfile(nfcJSONfile):
+        os.remove(nfcJSONfile)
+    if os.path.isfile(bcJSONfile):
+        os.remove(bcJSONfile)
+    return 'All Data Files Deleted'
+
+# Delete IoT CSV and json files in dataFiles directory
+@app.route("/deleteiot")
+def deleteIOT():
+    if os.path.isfile(iotCSVfile):
+        os.remove(iotCSVfile)
+    if os.path.isfile(iotJSONfile):
+        os.remove(iotJSONfile)
+    return 'IoT Data Files Deleted'
+
+# Delete NFC CSV and json files in dataFiles directory
+@app.route("/deletenfc")
+def deleteNFC():
+    if os.path.isfile(nfcCSVfile):
+        os.remove(nfcCSVfile)
+    if os.path.isfile(nfcJSONfile):
+        os.remove(nfcJSONfile)
+    return 'NFC Data Files Deleted'
+
+# Delete blockchain CSV and json files in dataFiles directory
+@app.route("/deleteblockchain")
+def deleteBC():
+    if os.path.isfile(bcJSONfile):
+        os.remove(bcJSONfile)
+    return 'Blockchain Data Files Deleted'
 
 
 if __name__ == "__main__":
