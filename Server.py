@@ -15,12 +15,13 @@ nfcJSONfile = os.path.join(currentPath,'dataFiles/nfcOutput.json')
 bcJSONfile = os.path.join(currentPath,'dataFiles/bcOutput.json')
 bcTestFile = os.path.join(currentPath,'dataFiles/data.json')
 
+# Set authorization parameters from config file
 with open(configFile) as config:
     configVals = json.load(config)
     username = configVals['username']
     password = configVals['password']
 
-
+# Create list of lists containing data from CSV data
 def getCSV(filename, datatype):
     # Set table headers
     if datatype=='iot':
@@ -40,6 +41,7 @@ def getCSV(filename, datatype):
             count += 1
     return CSVlist
 
+# Return json data from IoT CSV
 def makeIOTjson():
     # Copy CSV data to json file, also return json object
     with open(iotCSVfile) as iotCsvFile:
@@ -49,6 +51,7 @@ def makeIOTjson():
         json.dump(data, iotJson)
     return jsonify(data)
 
+# Return json data from NFC CSV
 def makeNFCjson():
     # Copy CSV data to json file, also return json object
     with open(nfcCSVfile) as nfcCsvFile:
@@ -59,6 +62,7 @@ def makeNFCjson():
         json.dump(data, nfcJson)
     return jsonify(data)
 
+# Return json data from blockchain
 def makeBCjson():
     # Post request to return blockchain data
     content = {"channel": "default", "chaincode": "obcs-cardealer", "method": "queryVehiclePartByOwner", "args": ["TysonFarms"], "chaincodeVer": "1.0"}
@@ -70,6 +74,7 @@ def makeBCjson():
     payload = ast.literal_eval(result['payload'])
     print (payload)
 
+    # Write json to file
     with open(bcJSONfile, 'w') as jsonFile:
         jsonFile.write('[')
         for num, value in enumerate(payload):
@@ -79,10 +84,12 @@ def makeBCjson():
                 jsonFile.write(', ' + value['valueJson'])
         jsonFile.write(']')
 
+    # Return final json
     with open(bcJSONfile, 'r') as jsonFile:
         data = json.load(jsonFile)
     return jsonify(data)
 
+# Add newly posted data to NFC CSV file
 def makeNFCcsv(nfcPost):
     # Make CSV and add headers if file does not exist
     if not os.path.isfile(nfcCSVfile):
@@ -101,6 +108,7 @@ def makeNFCcsv(nfcPost):
         fWriter.writerow([nfcPost['ID'], nfcPost['Date Hatched'], nfcPost['Latitude'], nfcPost['Longitude'], nfcPost['Date'], nfcPost['Time'], dateTime])
     return
 
+# Add data to blockchain
 def BCadd(nfcPost):
     dateTime = nfcPost['Date'] + nfcPost['Time']
     dateTime = dateTime.replace('/', '')
@@ -110,6 +118,7 @@ def BCadd(nfcPost):
     resp = requests.post(r'https://cloudforcebcmanager-gse00015180.blockchain.ocp.oraclecloud.com:443/restproxy1/bcsgw/rest/v1/transaction/invocation', json=content, auth=(username, password))
     return
 
+# Default testing display
 @app.route("/")
 def testView():
     # Pass CSV data as list of lists to index.html
@@ -117,18 +126,28 @@ def testView():
     nfcTable = getCSV(nfcCSVfile, 'nfc')
     return render_template('index.html', iotTable=iotTable, nfcTable=nfcTable)
 
+# Return all IoT data as json
 @app.route("/iot")
 def iotAllOut():
     # Get iot json string from CSV and return it
     IOTjson = makeIOTjson()
     return IOTjson
 
+# Return all NFC data as json
 @app.route("/nfc")
 def nfcAllOut():
     # Get nfc json string from CSV and return it
     NFCjson = makeNFCjson()
     return NFCjson    
 
+# Return all blockchain data as json
+@app.route("/blockchain")
+def bcAllOut():
+    # Get nfc json string from CSV and return it
+    BCjson = makeBCjson()
+    return BCjson 
+
+# Add NFC data to system when posted in json format
 @app.route('/postjson', methods = ['POST'])
 def receivePost():
     # Get json data and send to CSV file
@@ -137,21 +156,18 @@ def receivePost():
     BCadd(message)
     return 'JSON posted'
 
-@app.route('/nfc/<nfcid>')
-def api_article(nfcid):
-    return 'You are reading ' + nfcid
-
+# Add NFC data to system when posted from phone app
 @app.route('/post', methods = ['POST'])
 def postJsonHandler():
     message = request.form
-    makeNFCcsv(message) 
+    makeNFCcsv(message)
+    BCadd(message)
     return 'JSON posted'
 
-@app.route("/blockchain")
-def bcAllOut():
-    # Get nfc json string from CSV and return it
-    BCjson = makeBCjson()
-    return BCjson 
+# Test route with ID number
+@app.route('/nfc/<nfcid>')
+def api_article(nfcid):
+    return 'You are reading ' + nfcid
 
 #test json to be sent
 #     { "device":"TemperatureSensor", 
