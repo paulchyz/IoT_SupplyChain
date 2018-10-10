@@ -91,6 +91,26 @@ def makeBCjson():
     # Return final json
     with open(bcJSONfile, 'r') as jsonFile:
         data = json.load(jsonFile)
+        for value in data:
+            # Format latitude and longitude
+            latlon = str(value['recallDate'])
+            lat = latlon[:8]
+            lat = lat.replace('888', '.')
+            lon = latlon[8:]
+            lon = lon.replace('888', '.')
+            if lon[:1] == '9':
+                lon = '-' + lon[1:]
+            value['recallDate'] = lat + '/' + lon
+            
+            # Format date hatched
+            dateHatched = str(value['assemblyDate'])
+            value['assemblyDate'] = dateHatched[:2] + '/' + dateHatched[2:4] + '/' + dateHatched[4:]
+
+            # Rename json headers
+            value['ID'] = value.pop('assembler')
+            value['Date Hatched'] = value.pop('assemblyDate')
+            value['Lat/Lon'] = value.pop('recallDate')
+            value['DateTime'] = value.pop('serialNumber')
     return jsonify(data)
 
 # Add newly posted data to NFC CSV file
@@ -118,11 +138,11 @@ def BCadd(nfcPost):
     dateTime = dateTime.replace('/', '')
     dateTime = dateTime.replace(':', '')
     lat = nfcPost['Latitude']
-    lat = lat.replace('.', '111')
+    lat = lat.replace('.', '888')
     lon = nfcPost['Longitude']
-    lon = lon.replace('.', '111')
-    lon = lon.replace('-', '')
-    latlon = lat[:7] + '000' + lon[:8]
+    lon = lon.replace('.', '888')
+    lon = lon.replace('-', '9')
+    latlon = lat[:8] + lon[:10]
     date = nfcPost['Date Hatched']
     date = date.replace('/', '')
     #data = [nfcPost['ID'], 'Farm2', dateTime, 'TysonFarms', 'TysonFarms', 'false', '0']
