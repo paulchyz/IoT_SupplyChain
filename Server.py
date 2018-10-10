@@ -3,8 +3,12 @@ from jinja2 import Template
 import csv, json, ast
 import os, sys
 import requests
+import pymysql
 
 app = Flask(__name__)
+app.secret_key = "secret"
+
+
 currentPath = os.path.dirname(__file__)
 print(currentPath)
 configFile = os.path.join(currentPath,'config.json')
@@ -19,6 +23,36 @@ with open(configFile) as config:
     configVals = json.load(config)
     username = configVals['username']
     password = configVals['password']
+
+    db_host = configVals['db_host']
+    db_name = configVals['db_name']
+    db_username = configVals['db_username']
+    db_password = configVals['db_password']
+
+def connect():
+    mysql = pymysql.connect(host=db_host, port=3306, user=db_username, passwd=db_password, db=db_name ,cursorclass=pymysql.cursors.DictCursor)
+    return pymysql
+
+def create_tables():
+    conn = connect()
+    cur = conn.cursor()
+
+    cur.execute("CREATE TABLE IF NOT EXISTS iot(\
+        ID int NOT NULL AUTO_INCREMENT,\
+        Temperature REAL,\
+        Humidity REAL,\
+        Light REAL,\
+        DateTime DATETIME DEFAULT CURRENT_TIMESTAMP,\
+        PRIMARY KEY(ID));")
+    
+    cur.execute("CREATE TABLE IF NOT EXISTS nfc(\
+        ID int NOT NULL AUTO_INCREMENT,\
+        Latitude REAL,\
+        Longitude REAL,\
+        DateHatched DATETIME,\
+        DateTime DATETIME DEFAULT CURRENT_TIMESTAMP,\
+        PRIMARY KEY(ID));")
+
 
 # Create list of lists containing data from CSV data
 def getCSV(filename, datatype):
