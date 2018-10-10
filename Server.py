@@ -6,7 +6,6 @@ import requests
 
 app = Flask(__name__)
 currentPath = os.path.dirname(__file__)
-print(currentPath)
 configFile = os.path.join(currentPath,'config.json')
 iotCSVfile = os.path.join(currentPath,'dataFiles/iotData.csv')
 nfcCSVfile = os.path.join(currentPath,'dataFiles/nfcData.csv')
@@ -78,7 +77,6 @@ def makeBCjson():
     result = data.json()['result']
     encode = result['encode']
     payload = ast.literal_eval(result['payload'])
-    print (payload)
 
     # Write json to file
     with open(bcJSONfile, 'w') as jsonFile:
