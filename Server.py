@@ -117,7 +117,16 @@ def BCadd(nfcPost):
     dateTime = nfcPost['Date'] + nfcPost['Time']
     dateTime = dateTime.replace('/', '')
     dateTime = dateTime.replace(':', '')
-    data = [nfcPost['ID'], 'Farm2', dateTime, 'TysonFarms', 'TysonFarms', 'false', '0']
+    lat = nfcPost['Latitude']
+    lat = lat.replace('.', '111')
+    lon = nfcPost['Longitude']
+    lon = lon.replace('.', '111')
+    lon = lon.replace('-', '')
+    latlon = lat[:7] + '000' + lon[:8]
+    date = nfcPost['Date Hatched']
+    date = date.replace('/', '')
+    #data = [nfcPost['ID'], 'Farm2', dateTime, 'TysonFarms', 'TysonFarms', 'false', '0']
+    data = [dateTime, nfcPost['ID'], date, 'TysonFarms', 'TysonFarms', 'false', latlon]
     content = {"channel": "default","chaincode": "obcs-cardealer","method": "initVehiclePart","chaincodeVer": "1.0","args": data,"proposalWaitTime": 50000,"transactionWaitTime": 60000}
     resp = requests.post(r'https://cloudforcebcmanager-gse00015180.blockchain.ocp.oraclecloud.com:443/restproxy1/bcsgw/rest/v1/transaction/invocation', json=content, auth=(username, password))
     return
