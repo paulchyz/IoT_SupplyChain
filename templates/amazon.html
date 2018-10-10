@@ -1,0 +1,63 @@
+<html>  
+
+  <style>
+    table, th, td {
+       border: 1px solid black;
+       border-collapse: collapse;
+       text-align: right;
+    }
+    th, td {
+      padding: 10px;
+    }
+    th {
+      text-align: center;
+    }
+    .flex-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-evenly;
+    }
+    </style>
+
+  <div class="flex-container">
+    <table id = "IoT" style = "width:%">
+    
+    <TR>
+        <TD>Temperature</TD>
+        <TD>Humidity</TD>
+        <TD>Light</TD>
+        <TD>Datetime</TD>
+    </TR>
+
+    {% for r in iotTable %}
+    <TR></TR>
+      <TD>{{r["Temperature"]}}</TD>
+      <TD>{{r["Humidity"]}}</TD>
+      <TD>{{r["Light"]}}</TD>
+      <TD>{{r["DateTime"]}}</TD>
+    </TR>
+    {% endfor %}
+    </table>
+
+    <table id = "NFC" style = "width:%">
+        <TR>
+            <TD>ID</TD>
+            <TD>Latitude</TD>
+            <TD>Longitude</TD>
+            <TD>Date Hatched</TD>
+            <TD>Scan Date</TD>
+
+        </TR>
+      {% for r in nfcTable %}
+      <TR></TR>
+        <TD>{{r["ID"]}}</TD>
+        <TD>{{r["Latitude"]}}</TD>
+        <TD>{{r["Longitude"]}}</TD>
+        <TD>{{r["DateHatched"]}}</TD>
+        <TD>{{r["DateTime"]}}</TD>
+      </TR>
+      {% endfor %}
+      </table>
+    </div>
+
+</html>

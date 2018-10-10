@@ -4,6 +4,7 @@ import csv, json, ast
 import os, sys
 import requests
 import pymysql
+import datetime
 
 app = Flask(__name__)
 app.secret_key = "secret"
@@ -20,235 +21,288 @@ bcJSONfile = os.path.join(currentPath,'dataFiles/bcOutput.json')
 
 # Set authorization parameters from config file
 with open(configFile) as config:
-    configVals = json.load(config)
-    username = configVals['username']
-    password = configVals['password']
+	configVals = json.load(config)
+	username = configVals['username']
+	password = configVals['password']
 
-    db_host = configVals['db_host']
-    db_name = configVals['db_name']
-    db_username = configVals['db_username']
-    db_password = configVals['db_password']
+	db_host = configVals['db_host']
+	db_name = configVals['db_name']
+	db_username = configVals['db_username']
+	db_password = configVals['db_password']
 
 def connect():
-    mysql = pymysql.connect(host=db_host, port=3306, user=db_username, passwd=db_password, db=db_name ,cursorclass=pymysql.cursors.DictCursor)
-    return pymysql
+	mysql = pymysql.connect(host=db_host, port=3306, user=db_username, passwd=db_password, db=db_name, cursorclass=pymysql.cursors.DictCursor)
+	return mysql
 
+@app.route("/create_tables")
 def create_tables():
-    conn = connect()
-    cur = conn.cursor()
+	conn = connect()
+	cur = conn.cursor()
 
-    cur.execute("CREATE TABLE IF NOT EXISTS iot(\
-        ID int NOT NULL AUTO_INCREMENT,\
-        Temperature REAL,\
-        Humidity REAL,\
-        Light REAL,\
-        DateTime DATETIME DEFAULT CURRENT_TIMESTAMP,\
-        PRIMARY KEY(ID));")
-    
-    cur.execute("CREATE TABLE IF NOT EXISTS nfc(\
-        ID int NOT NULL AUTO_INCREMENT,\
-        Latitude REAL,\
-        Longitude REAL,\
-        DateHatched DATETIME,\
-        DateTime DATETIME DEFAULT CURRENT_TIMESTAMP,\
-        PRIMARY KEY(ID));")
+	cur.execute("CREATE TABLE IF NOT EXISTS iot(\
+		ID int NOT NULL AUTO_INCREMENT,\
+		Temperature REAL,\
+		Humidity REAL,\
+		Light REAL,\
+		DateTime DATETIME DEFAULT CURRENT_TIMESTAMP,\
+		PRIMARY KEY(ID));")
+	
+	cur.execute("CREATE TABLE IF NOT EXISTS nfc(\
+		ID int NOT NULL AUTO_INCREMENT,\
+		Latitude REAL,\
+		Longitude REAL,\
+		DateHatched DATE,\
+		DateTime DATETIME DEFAULT CURRENT_TIMESTAMP,\
+		PRIMARY KEY(ID));")
+	
+	conn.commit()
+	cur.close()
+	conn.close()
+
+	return "Created tables"
+
+@app.route("/conversion")
+def convertCSVtoSQL():
+	iotCSV = getCSV(iotCSVfile, 'iot')
+	nfcCSV = getCSV(nfcCSVfile, 'nfc')
+	conn = connect()
+	cur = conn.cursor()
+
+	for row in iotCSV[1:]:
+		date_string = row[0] + " " + row[1]
+		date_unformatted = datetime.datetime.strptime(date_string, "%Y/%m/%d %H:%M:%S")
+		date_formatted = datetime.date.strftime(date_unformatted, "%Y-%m-%d %H:%M:%S")
+		temperature = float(row[2])
+		humidity = float(row[3])
+		light = float(row[4])
+		cur.execute("INSERT INTO iot(Temperature, Humidity, Light, DateTime) VALUES({temp}, {hum}, {lit}, %s);".format(temp=temperature, hum=humidity, lit=light), date_formatted)
+
+	for row in nfcCSV[1:]:
+		date_string = "20" + row[4] + " " + row[5]
+		date_unformatted = datetime.datetime.strptime(date_string, "%Y/%m/%d %H:%M:%S")
+		date_formatted = datetime.date.strftime(date_unformatted, "%Y-%m-%d %H:%M:%S")
+
+		hatch_date= row[1].replace("/", "-")
+
+		id = int(row[0])
+		lat = float(row[2])
+		lon = float(row[3])
+
+		cur.execute("INSERT INTO nfc(ID, Latitude, Longitude, DateHatched, DateTime) VALUES({id}, {lat}, {lon}, %s, %s);".format(id=id, lat=lat, lon=lon), (hatch_date, date_formatted))
+
+	conn.commit()
+	cur.close()
+	conn.close()
+
+	return "Conversion"
+
+@app.route("/amazon")
+def amazon():
+	conn = connect()
+	cur = conn.cursor()
+	cur.execute("SELECT * FROM iot;")
+	iotData = cur.fetchall()
+	cur.execute("SELECT * FROM nfc;")
+	nfcData = cur.fetchall()
+
+	return render_template("amazon.html", iotTable = iotData, nfcTable = nfcData)
 
 
 # Create list of lists containing data from CSV data
 def getCSV(filename, datatype):
-    # Set table headers
-    if datatype=='iot':
-        CSVlist = [['Date', 'Time', 'Temperature', 'Humidity', 'Light', 'DateTime']]
-    elif datatype=='nfc':
-        CSVlist = [['ID', 'Date Hatched', 'Latitude', 'Longitude', 'Date', 'Time', 'DateTime']]
-    else:
-        CSVlist = [[]]
+	# Set table headers
+	if datatype=='iot':
+		CSVlist = [['Date', 'Time', 'Temperature', 'Humidity', 'Light', 'DateTime']]
+	elif datatype=='nfc':
+		CSVlist = [['ID', 'Date Hatched', 'Latitude', 'Longitude', 'Date', 'Time', 'DateTime']]
+	else:
+		CSVlist = [[]]
 
-    if os.path.isfile(filename):
-        # Store CSV data into list of lists
-        with open(filename) as f:
-            csvreader = csv.reader(f)
-            count = 0
-            for row in csvreader:
-                if count > 0:
-                    CSVlist.append(row)
-                count += 1
-    return CSVlist
+	if os.path.isfile(filename):
+		# Store CSV data into list of lists
+		with open(filename) as f:
+			csvreader = csv.reader(f)
+			count = 0
+			for row in csvreader:
+				if count > 0:
+					CSVlist.append(row)
+				count += 1
+	return CSVlist
 
 # Return json data from IoT CSV
 def makeIOTjson():
-    # Copy CSV data to json file, also return json object
-    if os.path.isfile(iotCSVfile):
-        with open(iotCSVfile) as iotCsvFile:
-            iotJson = open(iotJSONfile, 'w')
-            iotreader = csv.DictReader(iotCsvFile)
-            data = [r for r in iotreader]
-            json.dump(data, iotJson)
-    else:
-        data = {"Date": "", "DateTime": "", "Humidity": "", "Light": "", "Temperature": "", "Time": ""}
-    return jsonify(data)
+	# Copy CSV data to json file, also return json object
+	if os.path.isfile(iotCSVfile):
+		with open(iotCSVfile) as iotCsvFile:
+			iotJson = open(iotJSONfile, 'w')
+			iotreader = csv.DictReader(iotCsvFile)
+			data = [r for r in iotreader]
+			json.dump(data, iotJson)
+	else:
+		data = {"Date": "", "DateTime": "", "Humidity": "", "Light": "", "Temperature": "", "Time": ""}
+	return jsonify(data)
 
 # Return json data from NFC CSV
 def makeNFCjson():
-    # Copy CSV data to json file, also return json object
-    if os.path.isfile(nfcCSVfile):
-        with open(nfcCSVfile) as nfcCsvFile:
-            nfcJson = open(nfcJSONfile, 'w')
-            nfcreader = csv.DictReader(nfcCsvFile)
+	# Copy CSV data to json file, also return json object
+	if os.path.isfile(nfcCSVfile):
+		with open(nfcCSVfile) as nfcCsvFile:
+			nfcJson = open(nfcJSONfile, 'w')
+			nfcreader = csv.DictReader(nfcCsvFile)
 
-            data = [r for r in nfcreader]
-            json.dump(data, nfcJson)
-    else:
-        data = {"Date": "", "Date Hatched": "", "DateTime": "", "ID": "", "Latitude": "", "Longitude": "", "Time": ""}
-    return jsonify(data)
+			data = [r for r in nfcreader]
+			json.dump(data, nfcJson)
+	else:
+		data = {"Date": "", "Date Hatched": "", "DateTime": "", "ID": "", "Latitude": "", "Longitude": "", "Time": ""}
+	return jsonify(data)
 
 # Return json data from blockchain
 def makeBCjson():
-    # Post request to return blockchain data
-    content = {"channel": "default", "chaincode": "obcs-cardealer", "method": "queryVehiclePartByOwner", "args": ["TysonFarms"], "chaincodeVer": "1.0"}
-    data = requests.post(r'https://cloudforcebcmanager-gse00015180.blockchain.ocp.oraclecloud.com/restproxy1/bcsgw/rest/v1/transaction/query', json=content, auth=(username, password))
+	# Post request to return blockchain data
+	content = {"channel": "default", "chaincode": "obcs-cardealer", "method": "queryVehiclePartByOwner", "args": ["TysonFarms"], "chaincodeVer": "1.0"}
+	data = requests.post(r'https://cloudforcebcmanager-gse00015180.blockchain.ocp.oraclecloud.com/restproxy1/bcsgw/rest/v1/transaction/query', json=content, auth=(username, password))
 
-    # Parse blockchain data, store to json file, and return json object
-    result = data.json()['result']
-    encode = result['encode']
-    payload = ast.literal_eval(result['payload'])
-    print (payload)
+	# Parse blockchain data, store to json file, and return json object
+	result = data.json()['result']
+	encode = result['encode']
+	payload = ast.literal_eval(result['payload'])
+	print (payload)
 
-    # Write json to file
-    with open(bcJSONfile, 'w') as jsonFile:
-        jsonFile.write('[')
-        for num, value in enumerate(payload):
-            if num == 0:
-                jsonFile.write(value['valueJson'])
-            else:
-                jsonFile.write(', ' + value['valueJson'])
-        jsonFile.write(']')
+	# Write json to file
+	with open(bcJSONfile, 'w') as jsonFile:
+		jsonFile.write('[')
+		for num, value in enumerate(payload):
+			if num == 0:
+				jsonFile.write(value['valueJson'])
+			else:
+				jsonFile.write(', ' + value['valueJson'])
+		jsonFile.write(']')
 
-    # Return final json
-    with open(bcJSONfile, 'r') as jsonFile:
-        data = json.load(jsonFile)
-    return jsonify(data)
+	# Return final json
+	with open(bcJSONfile, 'r') as jsonFile:
+		data = json.load(jsonFile)
+	return jsonify(data)
 
 # Add newly posted data to NFC CSV file
 def makeNFCcsv(nfcPost):
-    # Make CSV and add headers if file does not exist
-    if not os.path.isfile(nfcCSVfile):
-        f = open(nfcCSVfile, 'w')
-        fWriter = csv.writer(f)
-        fWriter.writerow(['ID', 'Date Hatched', 'Latitude', 'Longitude', 'Date', 'Time', 'DateTime'])
-        f.close()
+	# Make CSV and add headers if file does not exist
+	if not os.path.isfile(nfcCSVfile):
+		f = open(nfcCSVfile, 'w')
+		fWriter = csv.writer(f)
+		fWriter.writerow(['ID', 'Date Hatched', 'Latitude', 'Longitude', 'Date', 'Time', 'DateTime'])
+		f.close()
 
-    # Write data values to CSV file
-    with open(nfcCSVfile, 'a') as dataFile:
-        dateTime = nfcPost['Date'] + nfcPost['Time']
-        dateTime = dateTime.replace('/', '')
-        dateTime = dateTime.replace(':', '')
+	# Write data values to CSV file
+	with open(nfcCSVfile, 'a') as dataFile:
+		dateTime = nfcPost['Date'] + nfcPost['Time']
+		dateTime = dateTime.replace('/', '')
+		dateTime = dateTime.replace(':', '')
 
-        fWriter = csv.writer(dataFile)
-        fWriter.writerow([nfcPost['ID'], nfcPost['Date Hatched'], nfcPost['Latitude'], nfcPost['Longitude'], nfcPost['Date'], nfcPost['Time'], dateTime])
-    return
+		fWriter = csv.writer(dataFile)
+		fWriter.writerow([nfcPost['ID'], nfcPost['Date Hatched'], nfcPost['Latitude'], nfcPost['Longitude'], nfcPost['Date'], nfcPost['Time'], dateTime])
+	return
 
 # Add data to blockchain
 def BCadd(nfcPost):
-    dateTime = nfcPost['Date'] + nfcPost['Time']
-    dateTime = dateTime.replace('/', '')
-    dateTime = dateTime.replace(':', '')
-    data = [nfcPost['ID'], 'Farm2', dateTime, 'TysonFarms', 'TysonFarms', 'false', '0']
-    content = {"channel": "default","chaincode": "obcs-cardealer","method": "initVehiclePart","chaincodeVer": "1.0","args": data,"proposalWaitTime": 50000,"transactionWaitTime": 60000}
-    resp = requests.post(r'https://cloudforcebcmanager-gse00015180.blockchain.ocp.oraclecloud.com:443/restproxy1/bcsgw/rest/v1/transaction/invocation', json=content, auth=(username, password))
-    return
+	dateTime = nfcPost['Date'] + nfcPost['Time']
+	dateTime = dateTime.replace('/', '')
+	dateTime = dateTime.replace(':', '')
+	data = [nfcPost['ID'], 'Farm2', dateTime, 'TysonFarms', 'TysonFarms', 'false', '0']
+	content = {"channel": "default","chaincode": "obcs-cardealer","method": "initVehiclePart","chaincodeVer": "1.0","args": data,"proposalWaitTime": 50000,"transactionWaitTime": 60000}
+	resp = requests.post(r'https://cloudforcebcmanager-gse00015180.blockchain.ocp.oraclecloud.com:443/restproxy1/bcsgw/rest/v1/transaction/invocation', json=content, auth=(username, password))
+	return
 
 # Default testing display
 @app.route("/")
 def testView():
-    # Pass CSV data as list of lists to index.html
-    iotTable = getCSV(iotCSVfile, 'iot')
-    nfcTable = getCSV(nfcCSVfile, 'nfc')
-    return render_template('index.html', iotTable=iotTable, nfcTable=nfcTable)
+	# Pass CSV data as list of lists to index.html
+	iotTable = getCSV(iotCSVfile, 'iot')
+	nfcTable = getCSV(nfcCSVfile, 'nfc')
+	return render_template('index.html', iotTable=iotTable, nfcTable=nfcTable)
 
 # Return all IoT data as json
 @app.route("/iot")
 def iotAllOut():
-    # Get iot json string from CSV and return it
-    IOTjson = makeIOTjson()
-    return IOTjson
+	# Get iot json string from CSV and return it
+	IOTjson = makeIOTjson()
+	return IOTjson
 
 # Return all NFC data as json
 @app.route("/nfc")
 def nfcAllOut():
-    # Get nfc json string from CSV and return it
-    NFCjson = makeNFCjson()
-    return NFCjson    
+	# Get nfc json string from CSV and return it
+	NFCjson = makeNFCjson()
+	return NFCjson    
 
 # Return all blockchain data as json
 @app.route("/blockchain")
 def bcAllOut():
-    # Get nfc json string from CSV and return it
-    BCjson = makeBCjson()
-    return BCjson 
+	# Get nfc json string from CSV and return it
+	BCjson = makeBCjson()
+	return BCjson 
 
 # Add NFC data to system when posted in json format
 @app.route('/postjson', methods = ['POST'])
 def receivePost():
-    # Get json data and send to CSV file
-    message = request.get_json()
-    makeNFCcsv(message)
-    BCadd(message)
-    return 'JSON posted'
+	# Get json data and send to CSV file
+	message = request.get_json()
+	makeNFCcsv(message)
+	BCadd(message)
+	return 'JSON posted'
 
 # Add NFC data to system when posted from phone app
 @app.route('/post', methods = ['POST'])
 def postJsonHandler():
-    message = request.form
-    makeNFCcsv(message)
-    BCadd(message)
-    return 'JSON posted'
+	message = request.form
+	makeNFCcsv(message)
+	BCadd(message)
+	return 'JSON posted'
 
 # Test route with ID number
 @app.route('/nfc/<nfcid>')
 def api_article(nfcid):
-    return 'You are reading ' + nfcid
+	return 'You are reading ' + nfcid
 
 # Delete all CSV and json files in dataFiles directory
 @app.route("/deleteall")
 def deleteAll():
-    if os.path.isfile(iotCSVfile):
-        os.remove(iotCSVfile)
-    if os.path.isfile(nfcCSVfile):
-        os.remove(nfcCSVfile)
-    if os.path.isfile(iotJSONfile):
-        os.remove(iotJSONfile)
-    if os.path.isfile(nfcJSONfile):
-        os.remove(nfcJSONfile)
-    if os.path.isfile(bcJSONfile):
-        os.remove(bcJSONfile)
-    return 'All Data Files Deleted'
+	if os.path.isfile(iotCSVfile):
+		os.remove(iotCSVfile)
+	if os.path.isfile(nfcCSVfile):
+		os.remove(nfcCSVfile)
+	if os.path.isfile(iotJSONfile):
+		os.remove(iotJSONfile)
+	if os.path.isfile(nfcJSONfile):
+		os.remove(nfcJSONfile)
+	if os.path.isfile(bcJSONfile):
+		os.remove(bcJSONfile)
+	return 'All Data Files Deleted'
 
 # Delete IoT CSV and json files in dataFiles directory
 @app.route("/deleteiot")
 def deleteIOT():
-    if os.path.isfile(iotCSVfile):
-        os.remove(iotCSVfile)
-    if os.path.isfile(iotJSONfile):
-        os.remove(iotJSONfile)
-    return 'IoT Data Files Deleted'
+	if os.path.isfile(iotCSVfile):
+		os.remove(iotCSVfile)
+	if os.path.isfile(iotJSONfile):
+		os.remove(iotJSONfile)
+	return 'IoT Data Files Deleted'
 
 # Delete NFC CSV and json files in dataFiles directory
 @app.route("/deletenfc")
 def deleteNFC():
-    if os.path.isfile(nfcCSVfile):
-        os.remove(nfcCSVfile)
-    if os.path.isfile(nfcJSONfile):
-        os.remove(nfcJSONfile)
-    return 'NFC Data Files Deleted'
+	if os.path.isfile(nfcCSVfile):
+		os.remove(nfcCSVfile)
+	if os.path.isfile(nfcJSONfile):
+		os.remove(nfcJSONfile)
+	return 'NFC Data Files Deleted'
 
 # Delete blockchain CSV and json files in dataFiles directory
 @app.route("/deleteblockchain")
 def deleteBC():
-    if os.path.isfile(bcJSONfile):
-        os.remove(bcJSONfile)
-    return 'Blockchain Data Files Deleted'
+	if os.path.isfile(bcJSONfile):
+		os.remove(bcJSONfile)
+	return 'Blockchain Data Files Deleted'
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=True)
+	app.run(host='0.0.0.0', port=5000, debug=True)
