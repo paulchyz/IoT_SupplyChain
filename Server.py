@@ -12,6 +12,7 @@ nfcCSVfile = os.path.join(currentPath,'dataFiles/nfcData.csv')
 iotJSONfile = os.path.join(currentPath,'dataFiles/iotOutput.json')
 nfcJSONfile = os.path.join(currentPath,'dataFiles/nfcOutput.json')
 bcJSONfile = os.path.join(currentPath,'dataFiles/bcOutput.json')
+currentDateTimes = os.path.join(currentPath,'dataFiles/currentDateTimes.json')
 
 # Set authorization parameters from config file
 with open(configFile) as config:
@@ -151,6 +152,40 @@ def BCadd(nfcPost):
     resp = requests.post(r'https://cloudforcebcmanager-gse00015180.blockchain.ocp.oraclecloud.com:443/restproxy1/bcsgw/rest/v1/transaction/invocation', json=content, auth=(username, password))
     return
 
+# Get next json value
+def getNext(csvPath, datatype):
+    # Get current datetime stamp from file
+    if os.path.isfile(currentDateTimes):
+        with open(currentDateTimes, 'r') as DT:
+            vals = json.load(DT)
+            current = vals[datatype]
+    else:
+        current = 0
+    
+    # Iterate through items and return next newest if exists. Also update datetime stamp
+    if os.path.isfile(csvPath):
+        with open(csvPath) as CsvFile:
+            iotreader = csv.DictReader(CsvFile)
+            data = [r for r in iotreader]
+            flag = 0
+            for item in data:
+                if item["DateTime"] > current:
+                    retval = item
+                    current = item["DateTime"]
+                    flag = 1
+                    break
+            if flag == 0:
+                retval = 'UpToDate'
+    else:
+        retval = 'NoFile'
+    
+    # Write new datetime stamp to file
+    with open(currentDateTimes, 'w') as DT:
+        vals[datatype] = current
+        json.dump(vals, DT)
+
+    return jsonify(retval)
+
 # Default testing display
 @app.route("/")
 def testView():
@@ -166,6 +201,18 @@ def iotAllOut():
     IOTjson = makeIOTjson()
     return IOTjson
 
+@app.route("/iotnext")
+def iotNextOut():
+    iotAll = makeIOTjson()
+    iotNext = getNext(iotCSVfile, 'iot')
+    return iotNext
+
+@app.route("/nfcnext")
+def nfcNextOut():
+    nfcAll = makeNFCjson()
+    nfcNext = getNext(nfcCSVfile, 'nfc')
+    return nfcNext
+
 # Return all NFC data as json
 @app.route("/nfc")
 def nfcAllOut():
@@ -176,7 +223,7 @@ def nfcAllOut():
 # Return all blockchain data as json
 @app.route("/blockchain")
 def bcAllOut():
-    # Get nfc json string from CSV and return it
+    # Get nfc json string from blockchain and return it
     BCjson = makeBCjson()
     return BCjson 
 
