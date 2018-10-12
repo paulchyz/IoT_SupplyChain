@@ -7,9 +7,9 @@ address = osaIP + ':' + kafkaPort
 iottopic = 'iotcloudforce'
 nfctopic = 'nfccloudforce'
 
-iotNextAPI = r'http://localhost:5000/iotnext'
-nfcNextAPI = r'http://localhost:5000/nfcnext'
-#bcAPI = r'http://localhost:5000/blockchain'
+iotNextAPI = r'http://132.145.129.245:5000/iotnext'
+nfcNextAPI = r'http://132.145.129.245:5000/nfcnext'
+#bcAPI = r'http://132.145.129.245:5000/blockchain'
 
 producer = KafkaProducer(bootstrap_servers=[address], api_version=(0,10))
 
