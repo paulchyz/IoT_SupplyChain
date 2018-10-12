@@ -14,6 +14,8 @@ nfcJSONfile = os.path.join(currentPath,'dataFiles/nfcOutput.json')
 bcJSONfile = os.path.join(currentPath,'dataFiles/bcOutput.json')
 currentDateTimes = os.path.join(currentPath,'dataFiles/currentDateTimes.json')
 
+iotCSVfile = os.path.join(currentPath,'dataFiles/fakeData.csv')
+
 # Set authorization parameters from config file
 with open(configFile) as config:
     configVals = json.load(config)
@@ -26,7 +28,7 @@ def getCSV(filename, datatype):
     if datatype=='iot':
         CSVlist = [['Date', 'Time', 'Temperature', 'Humidity', 'Light', 'DateTime']]
     elif datatype=='nfc':
-        CSVlist = [['ID', 'Date Hatched', 'Latitude', 'Longitude', 'Date', 'Time', 'DateTime']]
+        CSVlist = [['ID', 'DateHatched', 'Latitude', 'Longitude', 'Date', 'Time', 'DateTime']]
     else:
         CSVlist = [[]]
 
@@ -50,6 +52,7 @@ def makeIOTjson():
             iotreader = csv.DictReader(iotCsvFile)
             data = [r for r in iotreader]
             json.dump(data, iotJson)
+            iotJson.close()
     else:
         data = {"Date": "", "DateTime": "", "Humidity": "", "Light": "", "Temperature": "", "Time": ""}
     return jsonify(data)
@@ -61,11 +64,11 @@ def makeNFCjson():
         with open(nfcCSVfile) as nfcCsvFile:
             nfcJson = open(nfcJSONfile, 'w')
             nfcreader = csv.DictReader(nfcCsvFile)
-
             data = [r for r in nfcreader]
             json.dump(data, nfcJson)
+            nfcJson.close()
     else:
-        data = {"Date": "", "Date Hatched": "", "DateTime": "", "ID": "", "Latitude": "", "Longitude": "", "Time": ""}
+        data = {"Date": "", "DateHatched": "", "DateTime": "", "ID": "", "Latitude": "", "Longitude": "", "Time": ""}
     return jsonify(data)
 
 # Return json data from blockchain
@@ -109,7 +112,7 @@ def makeBCjson():
 
             # Rename json headers
             value['ID'] = value.pop('assembler')
-            value['Date Hatched'] = value.pop('assemblyDate')
+            value['DateHatched'] = value.pop('assemblyDate')
             value['Lat/Lon'] = value.pop('recallDate')
             value['DateTime'] = value.pop('serialNumber')
     return jsonify(data)
@@ -120,7 +123,7 @@ def makeNFCcsv(nfcPost):
     if not os.path.isfile(nfcCSVfile):
         f = open(nfcCSVfile, 'w')
         fWriter = csv.writer(f)
-        fWriter.writerow(['ID', 'Date Hatched', 'Latitude', 'Longitude', 'Date', 'Time', 'DateTime'])
+        fWriter.writerow(['ID', 'DateHatched', 'Latitude', 'Longitude', 'Date', 'Time', 'DateTime'])
         f.close()
 
     # Write data values to CSV file
@@ -130,7 +133,7 @@ def makeNFCcsv(nfcPost):
         dateTime = dateTime.replace(':', '')
 
         fWriter = csv.writer(dataFile)
-        fWriter.writerow([nfcPost['ID'], nfcPost['Date Hatched'], nfcPost['Latitude'], nfcPost['Longitude'], nfcPost['Date'], nfcPost['Time'], dateTime])
+        fWriter.writerow([nfcPost['ID'], nfcPost['DateHatched'], nfcPost['Latitude'], nfcPost['Longitude'], nfcPost['Date'], nfcPost['Time'], dateTime])
     return
 
 # Add data to blockchain
@@ -144,7 +147,7 @@ def BCadd(nfcPost):
     lon = lon.replace('.', '888')
     lon = lon.replace('-', '9')
     latlon = lat[:8] + lon[:10]
-    date = nfcPost['Date Hatched']
+    date = nfcPost['DateHatched']
     date = date.replace('/', '')
     #data = [nfcPost['ID'], 'Farm2', dateTime, 'TysonFarms', 'TysonFarms', 'false', '0']
     data = [dateTime, nfcPost['ID'], date, 'TysonFarms', 'TysonFarms', 'false', latlon]
