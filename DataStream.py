@@ -14,17 +14,17 @@ if not os.path.isfile(iotCSVfile):
 while True:
 
     # Get humidity
-    humidity = requests.get(r'https://us.wio.seeed.io/v1/node/GroveTempHumD1/humidity?access_token=82702746652bd4bc0eb4d3b1a0d0d95c')
+    humidity = requests.get(r'https://us.wio.seeed.io/v1/node/GroveTempHumD1/humidity?access_token=8ccf1ac10486e01c4651835f57265e91')
     humidityNum = humidity.json()['humidity']
     print('Humidity: ' + str(humidityNum))
 
     # Get light
-    light = requests.get(r'https://us.wio.seeed.io/v1/node/GroveLuminanceA0/luminance?access_token=82702746652bd4bc0eb4d3b1a0d0d95c')
+    light = requests.get(r'https://us.wio.seeed.io/v1/node/GroveDigitalLightI2C0/lux?access_token=8ccf1ac10486e01c4651835f57265e91')
     lightNum = light.json()['lux']
     print('Light: ' + str(lightNum))
 
     # Get temp
-    temp = requests.get(r'https://us.wio.seeed.io/v1/node/GroveTempHumD1/temperature_f?access_token=82702746652bd4bc0eb4d3b1a0d0d95c')
+    temp = requests.get(r'https://us.wio.seeed.io/v1/node/GroveTempHumD1/temperature_f?access_token=8ccf1ac10486e01c4651835f57265e91')
     tempNum = temp.json()['fahrenheit_degree']
     print('Temp: ' + str(tempNum))
 
