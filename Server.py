@@ -185,9 +185,18 @@ def getNext(csvPath, datatype):
     # Write new datetime stamp to file
     with open(currentDateTimes, 'w') as DT:
         vals[datatype] = current
+        print(vals)
         json.dump(vals, DT)
 
     return jsonify(retval)
+
+def resetStamps():
+    # Reset current datetimes to 0
+    with open(currentDateTimes, 'w') as DT:
+        vals = {'iot': '0', 'nfc': '0'}
+        print (vals)
+        json.dump(vals, DT)
+    return
 
 # Default testing display
 @app.route("/")
@@ -247,10 +256,10 @@ def postJsonHandler():
     BCadd(message)
     return 'JSON posted'
 
-# Test route with ID number
-@app.route('/nfc/<nfcid>')
-def api_article(nfcid):
-    return 'You are reading ' + nfcid
+@app.route('/resetstamps')
+def reset():
+    resetStamps()
+    return 'Timestamps Reset'
 
 # Delete all CSV and json files in dataFiles directory
 @app.route("/deleteall")
