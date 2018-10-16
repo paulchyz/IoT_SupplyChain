@@ -14,7 +14,7 @@ nfcJSONfile = os.path.join(currentPath,'dataFiles/nfcOutput.json')
 bcJSONfile = os.path.join(currentPath,'dataFiles/bcOutput.json')
 currentDateTimes = os.path.join(currentPath,'dataFiles/currentDateTimes.json')
 
-iotCSVfile = os.path.join(currentPath,'dataFiles/fakeData.csv')
+#iotCSVfile = os.path.join(currentPath,'dataFiles/fakeData.csv')
 
 # Set authorization parameters from config file
 with open(configFile) as config:
@@ -172,7 +172,8 @@ def getNext(csvPath, datatype):
             data = [r for r in iotreader]
             flag = 0
             for item in data:
-                if item["DateTime"] > current:
+                if int(item["DateTime"]) > current:
+                    item["DateTime"] = int(item["DateTime"])
                     retval = item
                     current = item["DateTime"]
                     flag = 1
@@ -300,6 +301,13 @@ def deleteBC():
     if os.path.isfile(bcJSONfile):
         os.remove(bcJSONfile)
     return 'Blockchain Data Files Deleted'
+
+@app.route("/alert", methods = ['POST'])
+def alert():
+    message = request.get_json()
+    with open('OSAtest.json', 'w') as osa:
+        json.dump(message, osa)
+    return jsonify('ALERT!')
 
 
 if __name__ == "__main__":
