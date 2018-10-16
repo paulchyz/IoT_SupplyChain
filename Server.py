@@ -172,8 +172,8 @@ def getNext(csvPath, datatype):
             data = [r for r in iotreader]
             flag = 0
             for item in data:
-                if int(item["DateTime"]) > current:
-                    item["DateTime"] = int(item["DateTime"])
+                if (item["DateTime"]) > current:
+                    #item["DateTime"] = int(item["DateTime"])
                     retval = item
                     current = item["DateTime"]
                     flag = 1
@@ -305,6 +305,7 @@ def deleteBC():
 @app.route("/alert", methods = ['POST'])
 def alert():
     message = request.get_json()
+    print (message)
     with open('OSAtest.json', 'w') as osa:
         json.dump(message, osa)
     return jsonify('ALERT!')
