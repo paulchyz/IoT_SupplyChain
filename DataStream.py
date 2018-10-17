@@ -29,7 +29,7 @@ while True:
     temp = requests.get(r'https://us.wio.seeed.io/v1/node/GroveTempHumD1/temperature_f?access_token=8ccf1ac10486e01c4651835f57265e91')
     tempNum = temp.json()['fahrenheit_degree']
     print('Temp: ' + str(tempNum))
-    
+
     # Get date and time
     currentDate = time.strftime('%Y/%m/%d', time.gmtime())
     currentTime = time.strftime('%H:%M:%S', time.gmtime())
@@ -47,13 +47,13 @@ while True:
         f.close()
 
     if tempFlag == 1 and humFlag == 1:
-        message = {'Temperature_&_Humidity_Alert': True, 'Temperature': tempNum, 'Humidity': humidityNum, 'Light': lightNum, 'Date': currentDate, 'Time': currentTime, 'DateTime': dateTime}
+        message = {'Temperature_Alert': True, 'Humidity_Alert': True, 'Temperature': tempNum, 'Humidity': humidityNum, 'Light': lightNum, 'Date': currentDate, 'Time': currentTime, 'DateTime': dateTime}
         alertList.append(message)
-    if tempFlag == 1:
-        message = {'Temperature_Alert': True, 'Temperature': tempNum, 'Humidity': humidityNum, 'Light': lightNum, 'Date': currentDate, 'Time': currentTime, 'DateTime': dateTime}
+    elif tempFlag == 1:
+        message = {'Temperature_Alert': True, 'Humidity_Alert': False, 'Temperature': tempNum, 'Humidity': humidityNum, 'Light': lightNum, 'Date': currentDate, 'Time': currentTime, 'DateTime': dateTime}
         alertList.append(message)
     elif humFlag == 1:
-        message = {'Humidity_Alert': True, 'Temperature': tempNum, 'Humidity': humidityNum, 'Light': lightNum, 'Date': currentDate, 'Time': currentTime, 'DateTime': dateTime}
+        message = {'Temperature_Alert': False, 'Humidity_Alert': True, 'Temperature': tempNum, 'Humidity': humidityNum, 'Light': lightNum, 'Date': currentDate, 'Time': currentTime, 'DateTime': dateTime}
         alertList.append(message)
     
     with open(alertFile, 'w') as af:
