@@ -13,6 +13,7 @@ iotJSONfile = os.path.join(currentPath,'dataFiles/iotOutput.json')
 nfcJSONfile = os.path.join(currentPath,'dataFiles/nfcOutput.json')
 bcJSONfile = os.path.join(currentPath,'dataFiles/bcOutput.json')
 currentDateTimes = os.path.join(currentPath,'dataFiles/currentDateTimes.json')
+alertFile = os.path.join(currentPath,'dataFiles/alerts.json')
 
 #iotCSVfile = os.path.join(currentPath,'dataFiles/fakeData.csv')
 
@@ -199,6 +200,12 @@ def resetStamps():
         json.dump(vals, DT)
     return
 
+def makeAlertjson():
+    with open(alertFile, 'r') as af:
+        data = json.load(af)
+        print(data)
+    return jsonify(data)
+
 # Default testing display
 @app.route("/")
 def testView():
@@ -310,6 +317,10 @@ def alert():
         json.dump(message, osa)
     return jsonify('ALERT!')
 
+@app.route("/alerts")
+def showAlerts():
+    alertjson = makeAlertjson()
+    return alertjson
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)
