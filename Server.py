@@ -322,5 +322,11 @@ def showAlerts():
     alertjson = makeAlertjson()
     return alertjson
 
+# Allow Cross Origin Resource Sharing on browsers after requests
+@app.after_request
+def add_header(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    return response
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)
