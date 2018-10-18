@@ -253,7 +253,7 @@ def receivePost():
     # Get json data and send to CSV file
     message = request.get_json()
     makeNFCcsv(message)
-    BCadd(message)
+    #BCadd(message)
     return 'JSON posted'
 
 # Add NFC data to system when posted from phone app
@@ -261,7 +261,7 @@ def receivePost():
 def postJsonHandler():
     message = request.form
     makeNFCcsv(message)
-    BCadd(message)
+    #BCadd(message)
     return 'JSON posted'
 
 @app.route('/resetstamps')
