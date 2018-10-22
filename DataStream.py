@@ -12,6 +12,9 @@ if not os.path.isfile(iotCSVfile):
     fWriter.writerow(['Date','Time','Temperature','Humidity','Light', 'DateTime'])
     f.close()
 
+tempFlag = 0
+humFlag = 0
+
 # Infinite loop
 while True:
     
@@ -22,7 +25,10 @@ while True:
 
     # Get light
     light = requests.get(r'https://us.wio.seeed.io/v1/node/GroveDigitalLightI2C0/lux?access_token=8ccf1ac10486e01c4651835f57265e91')
-    lightNum = light.json()['lux']
+    if 'lux' in light.json():
+        lightNum = light.json()['lux']
+    else:
+        lightNum = 999
     print('Light: ' + str(lightNum))
 
     # Get temp
@@ -35,12 +41,12 @@ while True:
     currentTime = time.strftime('%H:%M:%S', time.gmtime())
     dateTime = time.strftime('%Y%m%d%H%M%S', time.gmtime())
 
-    tempFlag = 0
-    if tempNum > 75:
-        tempFlag = 1
-    humFlag = 0
-    if humidityNum > 52:
-        humFlag = 1
+    #tempFlag = 0
+    if tempNum >80:
+        tempFlag += 1
+    #humFlag = 0
+    if humidityNum > 75:
+        humFlag += 1
     
     if not os.path.isfile(alertFile):
         f = open(alertFile, 'w')

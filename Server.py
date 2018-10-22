@@ -203,7 +203,7 @@ def resetStamps():
 def makeAlertjson():
     with open(alertFile, 'r') as af:
         data = json.load(af)
-        print(data)
+        #print(data)
     return jsonify(data)
 
 # Default testing display
