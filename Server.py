@@ -201,9 +201,12 @@ def resetStamps():
     return
 
 def makeAlertjson():
-    with open(alertFile, 'r') as af:
-        data = json.load(af)
-        #print(data)
+    if os.path.isfile(alertFile):
+        with open(alertFile, 'r') as af:
+            data = json.load(af)
+            #print(data)
+    else:
+        data = 'No Alerts'
     return jsonify(data)
 
 # Default testing display
