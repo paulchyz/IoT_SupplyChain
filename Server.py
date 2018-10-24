@@ -309,6 +309,12 @@ def deleteBC():
         os.remove(bcJSONfile)
     return 'Blockchain Data Files Deleted'
 
+@app.route("/deletealert")
+def deleteAlert():
+    if os.path.isfile(alertFile):
+        os.remove(alertFile)
+    return 'Alert Files Deleted'
+
 @app.route("/alert", methods = ['POST'])
 def alert():
     message = request.get_json()

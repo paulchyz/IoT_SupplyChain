@@ -14,6 +14,7 @@ if not os.path.isfile(iotCSVfile):
 
 tempFlag = 0
 humFlag = 0
+alertFlag = 0
 
 # Infinite loop
 while True:
@@ -36,39 +37,54 @@ while True:
     tempNum = temp.json()['fahrenheit_degree']
     print('Temp: ' + str(tempNum))
 
+    #humidityNum = 50
+    #lightNum = 700
+    #tempNum = 70
+
     # Get date and time
     currentDate = time.strftime('%Y/%m/%d', time.gmtime())
     currentTime = time.strftime('%H:%M:%S', time.gmtime())
     dateTime = time.strftime('%Y%m%d%H%M%S', time.gmtime())
-
-    #tempFlag = 0
-    if tempNum >80:
-        tempFlag += 1
-    #humFlag = 0
-    if humidityNum > 75:
-        humFlag += 1
     
     if not os.path.isfile(alertFile):
-        f = open(alertFile, 'w')
-        f.close()
+        alertFlag = 0
+    else:
+        alertFlag = 2
+    #    f = open(alertFile, 'w')
+    #    f.close()
 
-    if tempFlag == 1 and humFlag == 1:
-        message = {'Temperature_Alert': True, 'Humidity_Alert': True, 'Temperature': tempNum, 'Humidity': humidityNum, 'Light': lightNum, 'Date': currentDate, 'Time': currentTime, 'DateTime': dateTime}
-        alertList.append(message)
-    elif tempFlag == 1:
-        message = {'Temperature_Alert': True, 'Humidity_Alert': False, 'Temperature': tempNum, 'Humidity': humidityNum, 'Light': lightNum, 'Date': currentDate, 'Time': currentTime, 'DateTime': dateTime}
-        alertList.append(message)
-    elif humFlag == 1:
-        message = {'Temperature_Alert': False, 'Humidity_Alert': True, 'Temperature': tempNum, 'Humidity': humidityNum, 'Light': lightNum, 'Date': currentDate, 'Time': currentTime, 'DateTime': dateTime}
-        alertList.append(message)
+    tempFlag = 0
+    if tempNum > 80:
+        tempFlag = 1
+    humFlag = 0
+    if humidityNum > 75:
+        humFlag = 1
+
+    if alertFlag == 0:
+        if tempFlag == 1 and humFlag == 1:
+            message = {'Temperature_Alert': True, 'Humidity_Alert': True, 'Temperature': tempNum, 'Humidity': humidityNum, 'Light': lightNum, 'Date': currentDate, 'Time': currentTime, 'DateTime': dateTime}
+            alertList.append(message)
+            alertFlag = 1
+        elif tempFlag == 1:
+            message = {'Temperature_Alert': True, 'Humidity_Alert': False, 'Temperature': tempNum, 'Humidity': humidityNum, 'Light': lightNum, 'Date': currentDate, 'Time': currentTime, 'DateTime': dateTime}
+            alertList.append(message)
+            alertFlag = 1
+        elif humFlag == 1:
+            message = {'Temperature_Alert': False, 'Humidity_Alert': True, 'Temperature': tempNum, 'Humidity': humidityNum, 'Light': lightNum, 'Date': currentDate, 'Time': currentTime, 'DateTime': dateTime}
+            alertList.append(message)
+            alertFlag = 1
     
-    with open(alertFile, 'w') as af:
-        json.dump(alertList, af)
+    if alertFlag == 1:
+        print ('Alert Triggered')
+        with open(alertFile, 'w') as af:
+            json.dump(alertList, af)
+    else:
+        print ('No Alert')
 
     # Append data to CSV
     with open(iotCSVfile, 'a') as dataFile:
         fWriter = csv.writer(dataFile)
         fWriter.writerow([currentDate, currentTime, tempNum, humidityNum, lightNum, dateTime])
-    
+
     # Two-second intervals
     time.sleep(2)
